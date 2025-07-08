@@ -1,0 +1,53 @@
+name: Frontend Base Checks
+
+on:
+  pull_request: 
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+      - develop
+    workflow_dispatch:
+
+concurrency:
+  group: 'base-check'
+  cancel-in-progress: true
+
+jobs: 
+  base-check:
+    name: Lint, Format & Build Checks
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install & Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+      
+      - name: Clean Install
+        run: npm ci
+      
+      - name: Run Lint & Prettier Checks
+        id: lint
+        continue-on-error: true
+        run: npm run lint:ci > lint-log.txt 2>&1
+      
+      - name: Upload Lint Failure Logs
+        if: steps.lint.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-logs
+          path: lint-log.txt
+        
+      - name: Fail if lint failed
+        if: steps.lint.outcome == 'failure'
+        run: exit 1
+
+      - name: Run Build
+        run: npm run build
