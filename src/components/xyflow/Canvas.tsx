@@ -1,113 +1,76 @@
-import { useCallback, useState } from 'react';
-import { ArrowLeft, MessageSquareMore } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import {
-  addEdge,
   Background,
   BackgroundVariant,
   Controls,
   MiniMap,
   ReactFlow,
   ReactFlowProvider,
-  useEdgesState,
-  useNodesState,
   type Connection,
-  type Node,
+  type Edge,
   type NodeMouseHandler,
-  type XYPosition,
+  type NodeTypes,
 } from '@xyflow/react';
+import toast from 'react-hot-toast';
 
 import { useFlowStore } from '../../stores/flowStore';
+import type { CustomNodeUnion } from '../../types/nodes/nodes-metadata';
+import { loadFlow } from '../../utils/localFlowStore';
+import { sampleEdges, sampleNodes } from '../../utils/sampleFlowData';
 
-import CustomMessageNode, { type MessageNodeData } from './CustomMessageNode';
+import MessageConfig from './sidebar/MessageConfig';
+import NodeItems from './sidebar/NodeItems';
+import CustomNode from './CustomNode';
 
 import '@xyflow/react/dist/style.css';
 import './canvas.css';
 
 const Canvas = () => {
-  const { instance, setInstance } = useFlowStore();
+  const {
+    instance,
+    setInstance,
+    nodes,
+    setNodes,
+    onNodesChange,
+    addNode,
+    edges,
+    setEdges,
+    onEdgesChange,
+    addEdge,
+  } = useFlowStore();
 
-  const nodeTypes = {
-    message: CustomMessageNode,
+  const raw = loadFlow();
+
+  const initialNodes: CustomNodeUnion[] = raw?.nodes ?? sampleNodes;
+
+  const initialEdges: Edge[] = raw?.edges ?? sampleEdges;
+
+  const nodeTypes: NodeTypes = {
+    message: CustomNode,
+    trigger: CustomNode,
   };
 
-  const initialNodes = [
-    {
-      id: '1',
-      type: 'message',
-      position: { x: 0, y: 0 },
-      data: {
-        label: 'Send Message',
-        configuration: {
-          message: 'Hello I am Mourya Pranay, a Full Stack Developer',
-        },
-      },
-    },
-    {
-      id: '2',
-      type: 'message',
-      position: { x: 0, y: 100 },
-      data: {
-        label: 'Send Message',
-        configuration: {
-          message: 'How does the UI look?, Please let me know',
-        },
-      },
-    },
-    {
-      id: '3',
-      type: 'message',
-      position: { x: 0, y: 200 },
-      data: {
-        label: 'Send Message',
-        configuration: {
-          message:
-            'This is just a sample message that has been repeated | This is just a sample message that has been repeated | This is just a sample message that has been repeated | This is just a sample message that has been repeated',
-        },
-      },
-    },
-  ];
-
-  const initialEdges = [
-    {
-      id: 'e1',
-      source: '1',
-      target: '2',
-    },
-  ];
-  // const { screenToFlowPosition } = useReactFlow();
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [selectedNode, setSelectedNode] = useState<CustomNodeUnion | null>(null);
 
   const onConnect = useCallback(
-    (params: Connection) => {
-      setEdges((e) => addEdge(params, e));
+    // update edges manually to set source, target
+    (connection: Connection) => {
+      const sourceEdgeConnections = edges.find((edg) => edg.source === connection.source);
+      if (sourceEdgeConnections) {
+        toast.error('Source Handle can only have one edge');
+        return;
+      }
+      addEdge(connection);
     },
-    [setEdges],
+    [edges, setEdges],
   );
 
-  const onNodeClick: NodeMouseHandler<Node> = (_, node) => {
-    setSelectedNode(node);
+  const onNodeClick: NodeMouseHandler<CustomNodeUnion> = (_, node) => {
+    setSelectedNode(node); // to open sidebar config of that node
   };
 
   const onPaneClick = () => {
-    setSelectedNode(null);
-  };
-
-  const addNode = (position: XYPosition) => {
-    const newNode = {
-      id: `${new Date()}`,
-      type: 'message',
-      position,
-      data: {
-        label: 'Send Message',
-        configuration: {
-          message: '',
-        },
-      },
-    };
-    console.log('add Node', newNode);
-    setNodes((allNodes) => allNodes.concat(newNode));
+    setSelectedNode(null); // when user clicks on canvas, the sidebar closes
   };
 
   const onDrop: React.DragEventHandler<HTMLDivElement> = useCallback(
@@ -120,7 +83,7 @@ const Canvas = () => {
         x: event.clientX,
         y: event.clientY,
       });
-      addNode(position);
+      addNode(type, position);
     },
     [instance],
   );
@@ -129,22 +92,13 @@ const Canvas = () => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
   };
-  const isValidConnection = useCallback(
-    (
-      connection:
-        | Connection
-        | {
-            id: string;
-            source: string;
-            target: string;
-          },
-    ) => {
-      const targetConnections = edges.filter((edge) => edge.target === connection.target).length;
-      const maxConnections = 1;
-      return targetConnections < maxConnections;
-    },
-    [edges],
-  );
+
+  useEffect(() => {
+    //when application loads, we set the nodes/edges with default nodes/edges and its positions
+    setNodes(initialNodes);
+    setEdges(initialEdges);
+  }, []);
+
   return (
     <div className="canvas">
       <div className="reactflow-container">
@@ -164,7 +118,6 @@ const Canvas = () => {
             onPaneClick={onPaneClick}
             onDragOver={onDragOver}
             onDrop={onDrop}
-            isValidConnection={isValidConnection}
             fitView
           >
             <Controls />
@@ -173,87 +126,15 @@ const Canvas = () => {
           </ReactFlow>
         </ReactFlowProvider>
       </div>
-      {selectedNode ? (
-        <div className="sidebar">
-          <div className="sidebar-title-box">
-            <ArrowLeft
-              style={{ position: 'absolute', left: 0 }}
-              size={18}
-              onClick={() => setSelectedNode(null)}
-            />
-            <span className="sidebar-title">Message</span>
+      <div className="sidebar">
+        {selectedNode && selectedNode.type === 'message' ? (
+          <MessageConfig selectedNode={selectedNode} setSelectedNode={setSelectedNode} />
+        ) : (
+          <div className="sidebar">
+            <NodeItems />
           </div>
-
-          <div className="sidebar-content">
-            <div className="message-box">
-              <span className="light-text">Text</span>
-              <textarea className="sidebar-textarea" placeholder="Enter Your Message">
-                {(selectedNode.data as MessageNodeData).configuration.message}
-              </textarea>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="sidebar">
-          <div className="node-items">
-            <div
-              className="node-item"
-              draggable
-              onDragStart={(event) => {
-                event.dataTransfer.setData('application/reactflow', 'message');
-                event.dataTransfer.effectAllowed = 'move';
-              }}
-            >
-              <MessageSquareMore className="node-icon" size={24} />
-              <span className="node-title">Message</span>
-            </div>
-            <div
-              className="node-item"
-              draggable
-              onDragStart={(event) => {
-                event.dataTransfer.setData('application/reactflow', 'message');
-                event.dataTransfer.effectAllowed = 'move';
-              }}
-            >
-              <MessageSquareMore className="node-icon" size={24} />
-              <span className="node-title">Message</span>
-            </div>
-            <div
-              className="node-item"
-              draggable
-              onDragStart={(event) => {
-                event.dataTransfer.setData('application/reactflow', 'message');
-                event.dataTransfer.effectAllowed = 'move';
-              }}
-            >
-              <MessageSquareMore className="node-icon" size={24} />
-              <span className="node-title">Message</span>
-            </div>
-            <div
-              className="node-item"
-              draggable
-              onDragStart={(event) => {
-                event.dataTransfer.setData('application/reactflow', 'message');
-                event.dataTransfer.effectAllowed = 'move';
-              }}
-            >
-              <MessageSquareMore className="node-icon" size={24} />
-              <span className="node-title">Message</span>
-            </div>
-            <div
-              className="node-item"
-              draggable
-              onDragStart={(event) => {
-                event.dataTransfer.setData('application/reactflow', 'message');
-                event.dataTransfer.effectAllowed = 'move';
-              }}
-            >
-              <MessageSquareMore className="node-icon" size={24} />
-              <span className="node-title">Message</span>
-            </div>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

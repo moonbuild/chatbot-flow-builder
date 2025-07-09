@@ -1,39 +1,42 @@
 import { Handle, Position } from '@xyflow/react';
 import { MessageCircleMore } from 'lucide-react';
 
-import './customMessageNode.css';
+import './customNode.css';
 
-export type MessageNodeData = {
-  label: string;
-  configuration: {
-    message: string;
+const CustomNode = ({
+  data,
+  selected,
+}: {
+  data: {
+    title: string;
+    description?: string;
+    iconPath: string;
+    configuration: unknown;
   };
-};
-type Props = {
-  id: string;
-  selected: boolean;
-  data: MessageNodeData;
-};
+  selected?: boolean;
+}) => {
+  const { title, description, iconPath } = data;
 
-const CustomMessageNode = ({ data, selected }: Props) => {
   return (
     <div className={`node ${selected ? 'node-selected' : ''}`}>
       <Handle type="target" position={Position.Left} />
       <div className="node-label-box">
         <div className="node-label-left">
           <MessageCircleMore color={'var(--text-1)'} size={10} />
-          <span className="node-label">{data.label}</span>
+          <span className="node-label">{title}</span>
         </div>
         <div className="node-label-right">
-          <img className="node-icon-img" src="/node-icons/whatsapp.svg" />
+          <img className="node-icon-img" src={iconPath} />
         </div>
       </div>
       <div className="node-content">
-        <span className="node-content-message">test message 1sdfsdfsdfsdfsdf</span>
+        <span className="node-content-message">
+          {description?.trim().length === 0 ? 'Enter a Text' : description}
+        </span>
       </div>
       <Handle type="source" position={Position.Right} />
     </div>
   );
 };
 
-export default CustomMessageNode;
+export default CustomNode;

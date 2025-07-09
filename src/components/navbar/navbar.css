@@ -21,15 +21,40 @@
 }
 .nav-right {
   padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .save-changes {
   background-color: var(--contrast);
   color: var(--primary);
   border: 1px solid black;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
   padding: 4px 10px;
   border-radius: 12px;
   cursor: pointer;
 }
 .save-changes:hover {
   transform: translateY(-2px);
+}
+
+.delete-changes {
+  background-color: var(--background);
+  color: var(--contrast);
+  border: 1px solid black;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 4px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.delete-changes:hover {
+  transform: translateY(2px);
 }

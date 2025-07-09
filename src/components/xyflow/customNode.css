@@ -8,7 +8,9 @@
   min-width: 150px;
   max-width: 150px;
 }
-
+.node-selected {
+  border-color: var(--contrast);
+}
 .node-label-box {
   display: flex;
   flex-direction: row;
@@ -44,6 +46,7 @@
 .node-content {
   padding: 2px 8px;
   width: 100%;
+  min-height: 16px;
 }
 .node-content-message {
   width: 100%;

@@ -6,17 +6,29 @@
 body {
   background: var(--primary);
   color: var(--text-1);
+  font-family: var(--font-main);
   font-size: 16px;
-  font-weight: 400;
+  font-weight: 200;
+  line-height: normal;
 }
 
 div {
+  font-family: var(--font-main);
   color: var(--text-1);
   font-size: 16px;
   font-weight: 400;
+  line-height: normal;
 }
 span {
+  font-family: var(--font-main);
   color: var(--text-1);
   font-size: 16px;
   font-weight: 400;
+  line-height: normal;
+}
+button {
+  font-family: var(--font-main);
+  color: var(--text-1);
+  font-weight: 400;
+  line-height: normal;
 }
