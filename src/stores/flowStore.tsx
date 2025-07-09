@@ -17,22 +17,30 @@ import type {
   CustomNodeUnion,
   MessageNodeConfig,
   NodeConfigMap,
-  TriggerNodeConfig,
 } from '../types/nodes/nodes-metadata';
 
 type FlowStore = {
+  // Reactflow instance reference (used to call other flow methods)
   instance: ReactFlowInstance<Node, Edge> | null;
   setInstance: (instance: ReactFlowInstance<Node, Edge>) => void;
+
+  // Current nodes and edges in the flow
   nodes: CustomNodeUnion[];
   edges: Edge[];
+
+  // Replace full nodes/edges state
   setNodes: (nodes: CustomNodeUnion[]) => void;
   setEdges: (edges: Edge[]) => void;
+
+  // Updates nodes/edges on changes
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
 
+  // Add a new node or edge
   addNode: (type: CustomNodeUnion['type'], position: XYPosition) => void;
   addEdge: (connection: Connection | Edge) => void;
 
+  // Update a nodes configuration by id and type
   updateNodeConfig: <T extends CustomNodeTypes>(
     id: string,
     type: T,
@@ -43,10 +51,13 @@ type FlowStore = {
 export const useFlowStore = create<FlowStore>((set) => ({
   instance: null,
   setInstance: (instance) => set({ instance }),
+
   nodes: [],
   edges: [],
   setNodes: (nodes) => set({ nodes }),
   setEdges: (edges) => set({ edges }),
+
+  // Handle Node and Edge level changes like move, select, connect
   onNodesChange: (changes) =>
     set((state) => ({
       nodes: applyNodeChanges(changes, state.nodes) as CustomNodeUnion[],
@@ -55,6 +66,8 @@ export const useFlowStore = create<FlowStore>((set) => ({
     set((state) => ({
       edges: applyEdgeChanges(changes, state.edges),
     })),
+
+  // Add a new node of a 'specific type' at a given position
   addNode: (type, position) =>
     set((state) => {
       const id = crypto.randomUUID();
@@ -62,6 +75,7 @@ export const useFlowStore = create<FlowStore>((set) => ({
 
       switch (type) {
         case 'message':
+          // Create a message node with default config
           newNode = {
             id,
             type: 'message',
@@ -86,10 +100,14 @@ export const useFlowStore = create<FlowStore>((set) => ({
         nodes: [...state.nodes, newNode],
       };
     }),
+
+  // Add a new edge between nodes
   addEdge: (connection) =>
     set((state) => ({
       edges: addEdgeFn(connection, state.edges),
     })),
+
+  // Updates configuration for a node, using the type to find config shape
   updateNodeConfig: <T extends CustomNodeTypes>(
     id: string,
     type: T,
@@ -104,24 +122,13 @@ export const useFlowStore = create<FlowStore>((set) => ({
             ...node,
             data: {
               ...node.data,
+              // for message node we want to show the text message on the node, it may be different for other nodes.
               description: (newConfig as MessageNodeConfig).messageText.slice(0, 25),
               configuration: newConfig as MessageNodeConfig,
               type: 'message',
             },
           };
         }
-
-        if (type === 'trigger' && node.type === 'trigger') {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              configuration: newConfig as TriggerNodeConfig,
-              type: 'trigger',
-            },
-          };
-        }
-
         return node;
       });
 

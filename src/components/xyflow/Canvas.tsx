@@ -39,27 +39,30 @@ const Canvas = () => {
     addEdge,
   } = useFlowStore();
 
-  const raw = loadFlow();
+  const raw = loadFlow(); // fetch nodes, edges from localstorage
 
+  // if raw is null then we fetch sample nodes and edges.
   const initialNodes: CustomNodeUnion[] = raw?.nodes ?? sampleNodes;
 
   const initialEdges: Edge[] = raw?.edges ?? sampleEdges;
 
+  // customizing UI for each node via type
   const nodeTypes: NodeTypes = {
     message: CustomNode,
-    trigger: CustomNode,
+    trigger: CustomNode, //dummmy type to show it is done like this
   };
 
   const [selectedNode, setSelectedNode] = useState<CustomNodeUnion | null>(null);
 
   const onConnect = useCallback(
-    // update edges manually to set source, target
     (connection: Connection) => {
+      // Find if source of connection has an edge already
       const sourceEdgeConnections = edges.find((edg) => edg.source === connection.source);
       if (sourceEdgeConnections) {
-        toast.error('Source Handle can only have one edge');
+        toast.error('Source Handle can only have one connection');
         return;
       }
+      // Else Add Edge
       addEdge(connection);
     },
     [edges, setEdges],
@@ -75,32 +78,43 @@ const Canvas = () => {
 
   const onDrop: React.DragEventHandler<HTMLDivElement> = useCallback(
     (event) => {
+      // To handle the node drop
       event.preventDefault();
       const type = event.dataTransfer.getData('application/reactflow');
       if (!type || !instance) return;
 
+      // reactflow coords is different from screen coords, so we convert!
       const position = instance.screenToFlowPosition({
         x: event.clientX,
         y: event.clientY,
       });
+      // We add node to that position
       addNode(type, position);
     },
     [instance],
   );
 
+  //handles dnd event to allow dropping elements
   const onDragOver: React.DragEventHandler<HTMLDivElement> = (event) => {
     event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
+    event.dataTransfer.dropEffect = 'move'; //sets drop effect for user indication
   };
 
   useEffect(() => {
-    //when application loads, we set the nodes/edges with default nodes/edges and its positions
+    /** When application loads
+     * We find if any node has property 'selected = true' if so, open config sidebar
+     * We set the nodes/edges with default nodes/edges and its positions
+     */
+    const initialSelectedNode = initialNodes.find((n) => n.selected);
+    if (initialSelectedNode) setSelectedNode(initialSelectedNode);
+
     setNodes(initialNodes);
     setEdges(initialEdges);
   }, []);
 
   return (
     <div className="canvas">
+      {/* Container for React Flow */}
       <div className="reactflow-container">
         <ReactFlowProvider>
           <ReactFlow
@@ -120,16 +134,22 @@ const Canvas = () => {
             onDrop={onDrop}
             fitView
           >
+            {/* Built in UI controls: zoom, fit view, zoom lock */}
             <Controls />
+            {/* Shows a very useful pannable overview map */}
             <MiniMap zoomable pannable style={{ background: 'var(--contrast)', height: 120 }} />
+            {/* Dotted Background for UI */}
             <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
           </ReactFlow>
         </ReactFlowProvider>
       </div>
+      {/* Sidebar for config or node items */}
       <div className="sidebar">
         {selectedNode && selectedNode.type === 'message' ? (
+          // if a message node is selected show its appropriate configuration panel
           <MessageConfig selectedNode={selectedNode} setSelectedNode={setSelectedNode} />
         ) : (
+          // Otherwise show available draggable node items
           <div className="sidebar">
             <NodeItems />
           </div>

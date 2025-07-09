@@ -1,5 +1,8 @@
 import type { CustomNodeUnion } from '../types/nodes/nodes-metadata';
 
+// for testing purposes, if you are removing node, remove edge connection too
+
+// Sample node/edge data that will load initially if localstorage is empty
 const sampleNodes: CustomNodeUnion[] = [
   {
     id: '1',

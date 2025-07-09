@@ -3,6 +3,7 @@ import { MessageSquareMore } from 'lucide-react';
 const NodeItems = () => {
   return (
     <div className="node-items">
+      {/* Here 'node-item' is single node that can be dragged into the canvas */}
       <div
         className="node-item"
         draggable
