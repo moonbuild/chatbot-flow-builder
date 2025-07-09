@@ -1,0 +1,35 @@
+.navbar {
+  background: var(--navbar);
+  backdrop-filter: blur(10px);
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+
+  border-bottom: 1px solid var(--border);
+}
+.app-name-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+}
+.app-name-box:hover {
+  color: var(--contrast);
+  cursor: pointer;
+}
+.nav-right {
+  padding: 12px;
+}
+.save-changes {
+  background-color: var(--contrast);
+  color: var(--primary);
+  border: 1px solid black;
+  padding: 4px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.save-changes:hover {
+  transform: translateY(-2px);
+}

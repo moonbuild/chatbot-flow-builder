@@ -66,6 +66,7 @@ export default tseslint.config(
       ],
       "no-redeclare":"error",
       "@typescript-eslint/no-redeclare": "error",
+      "@typescript-eslint/no-explicit-any": "off",
     },
   },
 );
