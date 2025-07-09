@@ -1,7 +1,9 @@
 :root {
   --navbar: #e6edef;
   --primary: #f3f6f7;
-  --border: #4e717e;
+  --border: #abb4c4;
   --text-1: #000814;
   --contrast: #ef233c;
+
+  --font-main: 'Poppins', sans-serif;
 }
