@@ -1,0 +1,83 @@
+.canvas {
+  height: calc(100vh - 49px);
+  width: 100vw;
+  display: flex;
+}
+.reactflow-container {
+  width: 100%;
+  height: 100%;
+}
+.sidebar {
+  min-width: 320px;
+  max-width: 320px;
+  height: calc(100vh - 49px);
+  background: var(--navbar);
+
+  border-left: 1px solid var(--border);
+}
+
+.sidebar-title-box {
+  position: relative;
+  width: 100%;
+  height: 28px;
+  border-bottom: 0.5px solid var(--border);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.sidebar-title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.sidebar-content {
+  padding: 12px;
+}
+.light-text {
+  font-weight: 200;
+  font-style: italic;
+  margin-left: 4px;
+}
+.message-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sidebar-textarea {
+  min-width: 300px;
+  max-width: 300px;
+  min-height: 30px;
+  max-height: 300px;
+  color: var(--text-1);
+  caret-color: var(--text-2);
+  background-color: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: none;
+  padding: 8px 10px;
+}
+
+.node-items {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+  padding: 12px;
+  gap: 12px;
+}
+
+.node-item {
+  background: rgba(183, 191, 204, 0.3);
+  backdrop-filter: blur(10px);
+  border-radius: 4px;
+  padding: 10px 24px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
