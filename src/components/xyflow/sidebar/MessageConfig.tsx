@@ -4,6 +4,7 @@ import React, { type SetStateAction } from 'react';
 import type { CustomNodeUnion, MessageNode } from '../../../types/nodes/nodes-metadata';
 import { useFlowStore } from '../../../stores/flowStore';
 
+// Passing selectedNode setter to clear and update selection
 interface MessageConfigProps {
   selectedNode: CustomNodeUnion;
   setSelectedNode: React.Dispatch<SetStateAction<CustomNodeUnion | null>>;
@@ -12,17 +13,23 @@ interface MessageConfigProps {
 const MessageConfig = ({ selectedNode, setSelectedNode }: MessageConfigProps) => {
   const { updateNodeConfig } = useFlowStore();
 
+  // only render for message nodes
   if (selectedNode.data.type !== 'message') return null;
 
+  // typecast to MessageNode
   const messageNode = selectedNode as MessageNode;
+
+  // handles textarea input and updates global + local state
   const handleOnChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const messageText = e.target.value;
+
+    // this updated internal nodes configuration
     updateNodeConfig(messageNode.id, 'message', {
       ...messageNode.data.configuration,
       messageText: messageText,
     });
 
-    //update local state
+    // update local selectedNode state
     setSelectedNode((prev) => {
       if (!prev || prev.data.type !== 'message') return null;
       return {
@@ -41,6 +48,7 @@ const MessageConfig = ({ selectedNode, setSelectedNode }: MessageConfigProps) =>
 
   return (
     <React.Fragment>
+      {/* Title and Back Arrow for navigation */}
       <div className="sidebar-title-box">
         <ArrowLeft
           style={{ position: 'absolute', left: 0, cursor: 'pointer' }}
@@ -49,7 +57,7 @@ const MessageConfig = ({ selectedNode, setSelectedNode }: MessageConfigProps) =>
         />
         <span className="sidebar-title">Message</span>
       </div>
-
+      {/* Message textarea input */}
       <div className="sidebar-content">
         <div className="message-box">
           <span className="light-text">Text</span>
